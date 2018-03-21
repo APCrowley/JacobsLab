@@ -19,6 +19,14 @@ from tkinter import filedialog
                                #######################
 '''
 
+''' 
+
+git pull origin master
+git add whatever is being add (folder, file)
+git commit -m 'message'
+git push origin master
+
+'''
 
 
 
@@ -99,7 +107,3 @@ raw_sounds = load_sound_files(wav_names)
 plot_specgram(wav_names,raw_sounds)
 
 
-# test
-a=8
-    
-    
