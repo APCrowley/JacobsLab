@@ -1,0 +1,7 @@
+group,correct1,correct2,correct3,correct4,condition1,condition2,condition3,condition4
+a,7,3,6,10,stereo,right blocked,left blocked,stereo
+b,7,6,3,10,stereo,right blocked,left blocked,stereo
+c,7,3,10,6,stereo,right blocked,left blocked,stereo
+d,7,10,3,6,stereo,right blocked,left blocked,stereo
+e,7,10,6,3,stereo,right blocked,left blocked,stereo
+f,7,6,10,3,stereo,right blocked,left blocked,stereo
