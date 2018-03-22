@@ -26,6 +26,8 @@ git add whatever is being add (folder, file)
 git commit -m 'message'
 git push origin master
 
+If the branch is not available, ensure that the remote url is 
+https://github.com/AndrewPCrowley/JacobsLab.git
 '''
 
 
