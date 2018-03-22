@@ -1,0 +1,27 @@
+,Time_Relative_sf,Duration_sf,Observation,Behavior,Event_Type,alley,zone,sniff,hand
+26,32.565216,26.926361999999997,sub43_1,up,State start,False,False,False,True
+33,39.605442,30.0294,sub43_1,down,State start,False,False,False,True
+44,59.491578,0.0,sub43_1,up,State stop,False,False,False,True
+45,59.491578,94.025388,sub43_1,up,State start,False,False,False,True
+54,69.634842,0.0,sub43_1,down,State stop,False,False,False,True
+55,69.634842,90.58869,sub43_1,down,State start,False,False,False,True
+110,153.516966,0.0,sub43_1,up,State stop,False,False,False,True
+111,153.516966,16.749731999999998,sub43_1,up,State start,False,False,False,True
+118,160.223532,0.0,sub43_1,down,State stop,False,False,False,True
+119,160.223532,19.218816,sub43_1,down,State start,False,False,False,True
+126,170.266698,0.0,sub43_1,up,State stop,False,False,False,True
+127,170.266698,22.02156,sub43_1,up,State start,False,False,False,True
+140,179.442348,0.0,sub43_1,down,State stop,False,False,False,True
+141,179.442348,24.824304,sub43_1,down,State start,False,False,False,True
+151,192.288258,0.0,sub43_1,up,State stop,False,False,False,True
+153,192.288258,24.156983999999998,sub43_1,up,State start,False,False,False,True
+160,204.266652,0.0,sub43_1,down,State stop,False,False,False,True
+161,204.266652,16.949928,sub43_1,down,State start,False,False,False,True
+170,216.44524199999998,0.0,sub43_1,up,State stop,False,False,False,True
+171,216.44524199999998,91.48957200000001,sub43_1,up,State start,False,False,False,True
+174,221.21658000000002,0.0,sub43_1,down,State stop,False,False,False,True
+175,221.21658000000002,182.763947,sub43_1,down,State start,False,False,False,True
+230,307.934814,0.0,sub43_1,up,State stop,False,False,False,True
+231,307.934814,96.045713,sub43_1,up,State start,False,False,False,True
+279,403.980527,0.0,sub43_1,down,State stop,False,False,False,True
+280,403.980527,0.0,sub43_1,up,State stop,False,False,False,True
