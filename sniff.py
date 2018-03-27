@@ -93,22 +93,20 @@ def open_folder():
     return file_path
 
 
-
-
-def parse_audio:
+def parse_audio():
     mfccs, chroma, mel, contrast,tonnetz = extract_feature(fn)
+    return
+    
     
 def plot_specgram(sound_names, raw_sounds, graph_folder):
-    i = 1
     # fig = plt.figure(figsize=(25,60))
     for n,f in zip(sound_names,raw_sounds):
         fig = plt.figure()
         specgram(np.array(f), Fs=22050)
         # plt.title(n.title())
-        i += 1
         plt.suptitle(n,fontsize=18)
         # plt.show()
-        fig.savefig(n + ".png")
+        fig.savefig(graph_folder + '/' + n +".png")
         plt.close()
 
 
@@ -121,19 +119,19 @@ def plot_specgram(sound_names, raw_sounds, graph_folder):
 if __name__ == '__main__':
     path = os.getcwd()
     # folder = open_folder()  
-    folder = path
+    folder = path+'/clips'
     wav_names = get_file_names(folder)
+    wav_fullpath = [folder+'/'+name for name in wav_names]
+    
     
 
-
-
-raw_sounds = load_sound_files(wav_names)
+raw_sounds = load_sound_files(wav_fullpath)
 
 graph_folder = path+'/graphs'
 
 if not os.path.exists(graph_folder):
     os.makedirs(graph_folder)
     
-plot_specgram(wav_names,raw_sounds)
+plot_specgram(wav_names, raw_sounds, graph_folder)
 
 
