@@ -37,8 +37,8 @@ https://github.com/AndrewPCrowley/JacobsLab.git
                                #######################
 '''
 
-def extract_feature(file_name):
-    X, sample_rate = librosa.load(file_name)
+def extract_feature(wav_path):
+    X, sample_rate = librosa.load(wav_path)
     stft = np.abs(librosa.stft(X))
     mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
     chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
@@ -122,16 +122,20 @@ if __name__ == '__main__':
     folder = path+'/clips'
     wav_names = get_file_names(folder)
     wav_fullpath = [folder+'/'+name for name in wav_names]
-    
-    
 
-raw_sounds = load_sound_files(wav_fullpath)
+    # Load audio time series for all wav files
+    raw_sounds = load_sound_files(wav_fullpath)
 
-graph_folder = path+'/graphs'
-
-if not os.path.exists(graph_folder):
-    os.makedirs(graph_folder)
+    # create folder to save graphs
+    graph_folder = path+'/graphs'
+    if not os.path.exists(graph_folder):
+        os.makedirs(graph_folder)
     
-plot_specgram(wav_names, raw_sounds, graph_folder)
+    # plot_specgram(wav_names, raw_sounds, graph_folder)
+
+    # extract features for each wav file
+    mfccs, chroma, mel, contrast, tonnetz = extract_feature(wav_fullpath[0])
+
+
 
 
