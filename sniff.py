@@ -93,9 +93,19 @@ def open_folder():
     return file_path
 
 
-def parse_audio():
-    mfccs, chroma, mel, contrast,tonnetz = extract_feature(fn)
-    return
+def create_audio_X(wav_fullpaths):
+    features, labels = np.empty((0,193)), np.empty(0)
+    for f in wav_fullpaths:
+        mfccs, chroma, mel, contrast,tonnetz = extract_feature(f)
+        ext_features = np.hstack([mfccs,chroma,mel,contrast,tonnetz])
+        features = np.vstack([features,ext_features])
+        if '/sniff' in f:
+            labels = np.append(labels, 'sniff')
+        else:
+            labels = np.append(labels,'other')
+            
+        
+    return features, labels
     
     
 def plot_specgram(sound_names, raw_sounds, graph_folder):
@@ -121,20 +131,21 @@ if __name__ == '__main__':
     # folder = open_folder()  
     folder = path+'/clips'
     wav_names = get_file_names(folder)
-    wav_fullpath = [folder+'/'+name for name in wav_names]
+    wav_fullpaths = [folder+'/'+name for name in wav_names]
 
-    # Load audio time series for all wav files
-    raw_sounds = load_sound_files(wav_fullpath)
+    # # Load audio time series for all wav files
+    raw_sounds = load_sound_files(wav_fullpaths)
 
-    # create folder to save graphs
+    # # create folder to save graphs
     graph_folder = path+'/graphs'
     if not os.path.exists(graph_folder):
         os.makedirs(graph_folder)
     
     # plot_specgram(wav_names, raw_sounds, graph_folder)
 
-    # extract features for each wav file
-    mfccs, chroma, mel, contrast, tonnetz = extract_feature(wav_fullpath[0])
+    # # extract features for each wav file
+    # mfccs, chroma, mel, contrast, tonnetz = extract_feature(wav_fullpaths[0])
+    features, labels = create_audio_X(wav_fullpaths)
 
 
 
