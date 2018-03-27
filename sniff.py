@@ -109,6 +109,12 @@ def create_audio_X(wav_fullpaths):
     
     
 def plot_specgram(sound_names, raw_sounds, graph_folder):
+    spectrogram_folder = graph_folder+'/spectrogram/'
+    if not os.path.exists(spectrogram_folder):
+        os.makedirs(spectrogram_folder)
+    
+    
+    
     # fig = plt.figure(figsize=(25,60))
     for n,f in zip(sound_names,raw_sounds):
         fig = plt.figure()
@@ -116,7 +122,7 @@ def plot_specgram(sound_names, raw_sounds, graph_folder):
         # plt.title(n.title())
         plt.suptitle(n,fontsize=18)
         # plt.show()
-        fig.savefig(graph_folder + '/' + n +".png")
+        fig.savefig(spectrogram_folder + n +".png")
         plt.close()
 
 
@@ -141,11 +147,11 @@ if __name__ == '__main__':
     if not os.path.exists(graph_folder):
         os.makedirs(graph_folder)
     
-    # plot_specgram(wav_names, raw_sounds, graph_folder)
+    plot_specgram(wav_names, raw_sounds, graph_folder)
 
     # # extract features for each wav file
     # mfccs, chroma, mel, contrast, tonnetz = extract_feature(wav_fullpaths[0])
-    features, labels = create_audio_X(wav_fullpaths)
+    # features, labels = create_audio_X(wav_fullpaths)
 
 
 
