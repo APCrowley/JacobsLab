@@ -47,7 +47,7 @@ def extract_feature(wav_path):
     contrast = np.mean(librosa.feature.spectral_contrast(S=stft, sr=sample_rate).T,axis=0)
     tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),
     sr=sample_rate).T,axis=0)
-    return stft, mfccs,chroma,mel,contrast,tonnetz
+    return stft, mfccs,chroma,mel,contrast, tonnetz, X, sample_rate
     
 
 def get_file_names(folder):
@@ -97,7 +97,7 @@ def open_folder():
 def create_audio_X(wav_fullpaths, wav_names, plot='no'):
     features, labels = np.empty((0,193)), np.empty(0)
     for fp, f in zip(wav_fullpaths, wav_names):
-        stft, mfccs, chroma, mel, contrast,tonnetz = extract_feature(fp)
+        stft, mfccs, chroma, mel, contrast,tonnetz, raw_sound, sample_rate = extract_feature(fp)
         ext_features = np.hstack([mfccs,chroma,mel,contrast,tonnetz])
         features = np.vstack([features,ext_features])
         if '/sniff' in f:
@@ -106,53 +106,76 @@ def create_audio_X(wav_fullpaths, wav_names, plot='no'):
             labels = np.append(labels,'other')
     
         if plot=='yes':
-            plot_audio_features(f, stft, mfccs, chroma, mel, contrast, tonnetz, graph_folder)
+            plot_audio_features(raw_sound, sample_rate, f, graph_folder)
             
         
     return features, labels
 
-def plot_audio_features(file_name, stft, mfccs, chroma, mel, contrast, tonnetz, graph_folder):
-    # Short-time Fourier transform (STFT) spectrograms
-    stft_folder = graph_folder+'/STFT_spec/'
-    if not os.path.exists(stft_folder):
-        os.makedirs(stft_folder)
-    
-    # Short-time Fourier transform (STFT) spectrograms
-    stft_folder = graph_folder+'/STFT_spec/'
-    if not os.path.exists(stft_folder):
-        os.makedirs(stft_folder)
-    
-    # stft spectrogram
-    fig = plt.figure()
-    librosa.display.specshow(librosa.amplitude_to_db(stft, ref=np.max),
-                             y_axis='log', x_axis='time')
-    plt.title('Power spectrogram')
-    plt.colorbar(format='%+2.0f dB')
-    fig.savefig(stft_folder + file_name +".png")
-    plt.tight_layout()
-    plt.close()
+
         
-def plot_audio_features(file_name, stft, mfccs, chroma, mel, contrast, tonnetz, graph_folder):
+def plot_audio_features(raw_sound, sample_rate, file_name, graph_folder):
     # Short-time Fourier transform (STFT) spectrograms
     stft_folder = graph_folder+'/STFT_spec/'
     if not os.path.exists(stft_folder):
         os.makedirs(stft_folder)
 
-    # Short-time Fourier transform (STFT) spectrograms
-    stft_folder = graph_folder+'/STFT_spec/'
-    if not os.path.exists(stft_folder):
-        os.makedirs(stft_folder)
-
-    # stft spectrogram
-    fig = plt.figure()
-    librosa.display.specshow(librosa.amplitude_to_db(stft, ref=np.max),
+    stft_sound = np.abs(librosa.stft(raw_sound))
+    fig = plt.figure(figsize=(10, 4))
+    librosa.display.specshow(librosa.amplitude_to_db(stft_sound, ref=np.max),
                              y_axis='log', x_axis='time')
     plt.title('Power spectrogram')
     plt.colorbar(format='%+2.0f dB')
-    fig.savefig(stft_folder + file_name +".png")
     plt.tight_layout()
+    fig.savefig(stft_folder + file_name +"_stft.png")
     plt.close()
+    
+    
+    # Mel-frequency cepstral coefficients (MFCC) spectrograms
+    mfccs_folder = graph_folder+'/mfccs_spec/'
+    if not os.path.exists(mfccs_folder):
+        os.makedirs(mfccs_folder)
 
+    mfccs = librosa.feature.mfcc(y=raw_sound, sr=sample_rate, n_mfcc=40)
+    
+    fig = plt.figure(figsize=(10, 4))
+    librosa.display.specshow(mfccs, x_axis='time')
+    plt.colorbar()
+    plt.title('MFCC')
+    plt.tight_layout()
+    fig.savefig(mfccs_folder + file_name +"_mfccs.png")
+    plt.close()
+    
+    
+    # Chromagram 
+    chroma_folder = graph_folder+'/chroma_spec/'
+    if not os.path.exists(chroma_folder):
+        os.makedirs(chroma_folder)
+
+    chroma = librosa.feature.chroma_stft(S=stft_sound, sr=sample_rate)
+    fig = plt.figure(figsize=(10, 4))
+    librosa.display.specshow(chroma, y_axis='chroma', x_axis='time')
+    plt.colorbar()
+    plt.title('Chromagram')
+    plt.tight_layout()
+    fig.savefig(chroma_folder + file_name +"_chroma.png")
+    plt.close()
+    
+
+    # mel-scaled spectrogram (mel)
+    mel_folder = graph_folder+'/mel_spec/'
+    if not os.path.exists(mel_folder):
+        os.makedirs(mel_folder)
+        
+    mel = librosa.feature.melspectrogram(y=raw_sound, sr=sample_rate, n_mels=128, fmax=8000)
+    fig = plt.figure(figsize=(10, 4))
+    librosa.display.specshow(librosa.power_to_db(mel, ref=np.max),
+                             y_axis='mel', fmax=8000,
+                             x_axis='time')
+    plt.colorbar(format='%+2.0f dB')
+    plt.title('Mel spectrogram')
+    plt.tight_layout()
+    fig.savefig(mel_folder + file_name +"_mel.png")
+    plt.close()
 
 def plot_specgram(sound_names, raw_sounds, graph_folder):
     # Basic spectrograms
@@ -164,7 +187,7 @@ def plot_specgram(sound_names, raw_sounds, graph_folder):
     for n,f in zip(sound_names,raw_sounds):
         
         # Basic spectrogram
-        fig = plt.figure()
+        fig = plt.figure(figsize=(10, 4))
         specgram(np.array(f), Fs=22050)
         # plt.title(n.title())
         plt.suptitle(n,fontsize=18)
