@@ -4,6 +4,7 @@
 '''
 import os
 import librosa
+import librosa.display
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -46,7 +47,7 @@ def extract_feature(wav_path):
     contrast = np.mean(librosa.feature.spectral_contrast(S=stft, sr=sample_rate).T,axis=0)
     tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),
     sr=sample_rate).T,axis=0)
-    return mfccs,chroma,mel,contrast,tonnetz
+    return stft, mfccs,chroma,mel,contrast,tonnetz
     
 
 def get_file_names(folder):
@@ -93,30 +94,76 @@ def open_folder():
     return file_path
 
 
-def create_audio_X(wav_fullpaths):
+def create_audio_X(wav_fullpaths, wav_names, plot='no'):
     features, labels = np.empty((0,193)), np.empty(0)
-    for f in wav_fullpaths:
-        mfccs, chroma, mel, contrast,tonnetz = extract_feature(f)
+    for fp, f in zip(wav_fullpaths, wav_names):
+        stft, mfccs, chroma, mel, contrast,tonnetz = extract_feature(fp)
         ext_features = np.hstack([mfccs,chroma,mel,contrast,tonnetz])
         features = np.vstack([features,ext_features])
         if '/sniff' in f:
             labels = np.append(labels, 'sniff')
         else:
             labels = np.append(labels,'other')
+    
+        if plot=='yes':
+            plot_audio_features(f, stft, mfccs, chroma, mel, contrast, tonnetz, graph_folder)
             
         
     return features, labels
+
+def plot_audio_features(file_name, stft, mfccs, chroma, mel, contrast, tonnetz, graph_folder):
+    # Short-time Fourier transform (STFT) spectrograms
+    stft_folder = graph_folder+'/STFT_spec/'
+    if not os.path.exists(stft_folder):
+        os.makedirs(stft_folder)
     
+    # Short-time Fourier transform (STFT) spectrograms
+    stft_folder = graph_folder+'/STFT_spec/'
+    if not os.path.exists(stft_folder):
+        os.makedirs(stft_folder)
     
+    # stft spectrogram
+    fig = plt.figure()
+    librosa.display.specshow(librosa.amplitude_to_db(stft, ref=np.max),
+                             y_axis='log', x_axis='time')
+    plt.title('Power spectrogram')
+    plt.colorbar(format='%+2.0f dB')
+    fig.savefig(stft_folder + file_name +".png")
+    plt.tight_layout()
+    plt.close()
+        
+def plot_audio_features(file_name, stft, mfccs, chroma, mel, contrast, tonnetz, graph_folder):
+    # Short-time Fourier transform (STFT) spectrograms
+    stft_folder = graph_folder+'/STFT_spec/'
+    if not os.path.exists(stft_folder):
+        os.makedirs(stft_folder)
+
+    # Short-time Fourier transform (STFT) spectrograms
+    stft_folder = graph_folder+'/STFT_spec/'
+    if not os.path.exists(stft_folder):
+        os.makedirs(stft_folder)
+
+    # stft spectrogram
+    fig = plt.figure()
+    librosa.display.specshow(librosa.amplitude_to_db(stft, ref=np.max),
+                             y_axis='log', x_axis='time')
+    plt.title('Power spectrogram')
+    plt.colorbar(format='%+2.0f dB')
+    fig.savefig(stft_folder + file_name +".png")
+    plt.tight_layout()
+    plt.close()
+
+
 def plot_specgram(sound_names, raw_sounds, graph_folder):
+    # Basic spectrograms
     spectrogram_folder = graph_folder+'/spectrogram/'
     if not os.path.exists(spectrogram_folder):
         os.makedirs(spectrogram_folder)
     
-    
-    
     # fig = plt.figure(figsize=(25,60))
     for n,f in zip(sound_names,raw_sounds):
+        
+        # Basic spectrogram
         fig = plt.figure()
         specgram(np.array(f), Fs=22050)
         # plt.title(n.title())
@@ -150,8 +197,10 @@ if __name__ == '__main__':
     plot_specgram(wav_names, raw_sounds, graph_folder)
 
     # # extract features for each wav file
-    # mfccs, chroma, mel, contrast, tonnetz = extract_feature(wav_fullpaths[0])
-    # features, labels = create_audio_X(wav_fullpaths)
+    # stft, mfccs,chroma,mel,contrast,tonnetz = extract_feature(wav_fullpaths[0])
+    features, labels = create_audio_X(wav_fullpaths, wav_names, plot='yes')
+    
+
 
 
 
