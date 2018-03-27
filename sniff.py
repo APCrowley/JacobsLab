@@ -176,6 +176,39 @@ def plot_audio_features(raw_sound, sample_rate, file_name, graph_folder):
     plt.tight_layout()
     fig.savefig(mel_folder + file_name +"_mel.png")
     plt.close()
+    
+    
+    # spectral contrast spectrogram (mel)
+    contrast_folder = graph_folder+'/constrast_spec/'
+    if not os.path.exists(contrast_folder):
+        os.makedirs(contrast_folder)
+        
+    contrast = librosa.feature.spectral_contrast(S=stft_sound, sr=sample_rate)
+    fig = plt.figure(figsize=(10, 4))
+    librosa.display.specshow(contrast, x_axis='time')
+    plt.colorbar()
+    plt.ylabel('Frequency bands')
+    plt.title('Spectral contrast')
+    plt.tight_layout()
+    fig.savefig(contrast_folder + file_name +"_contrast.png")
+    plt.close()
+    
+    
+    # tonal centroid spectrogram (mel)
+    tonnetz_folder = graph_folder+'/tonnetz_spec/'
+    if not os.path.exists(tonnetz_folder):
+        os.makedirs(tonnetz_folder)
+        
+    y = librosa.effects.harmonic(raw_sound)
+    tonnetz = librosa.feature.tonnetz(y=y, sr=sample_rate)
+    
+    fig = plt.figure(figsize=(10, 4))
+    librosa.display.specshow(tonnetz, y_axis='tonnetz')
+    plt.colorbar()
+    plt.title('Tonal Centroids (Tonnetz)')
+    plt.tight_layout()
+    fig.savefig(tonnetz_folder + file_name +"_tonnetz.png")
+    plt.close()
 
 def plot_specgram(sound_names, raw_sounds, graph_folder):
     # Basic spectrograms
@@ -221,7 +254,7 @@ if __name__ == '__main__':
 
     # # extract features for each wav file
     # stft, mfccs,chroma,mel,contrast,tonnetz = extract_feature(wav_fullpaths[0])
-    features, labels = create_audio_X(wav_fullpaths, wav_names, plot='yes')
+    features, labels = create_audio_X(wav_fullpaths, wav_names, plot='no')
     
 
 
