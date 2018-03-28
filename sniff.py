@@ -124,8 +124,7 @@ def plot_audio_features(wav_fullpaths, wav_names):
         fig = plt.figure(figsize=(10, 4))
         librosa.display.specshow(librosa.amplitude_to_db(stft_sound, ref=np.max),
                                  y_axis='log', x_axis='time')
-        plt.title('Power spectrogram')
-        plt.colorbar(format='%+2.0f dB')
+        plt.axis('off')
         plt.tight_layout()
         fig.savefig(stft_folder + file_name +"_stft.png")
         plt.close()
@@ -140,8 +139,7 @@ def plot_audio_features(wav_fullpaths, wav_names):
     
         fig = plt.figure(figsize=(10, 4))
         librosa.display.specshow(mfccs, x_axis='time')
-        plt.colorbar()
-        plt.title('MFCC')
+        plt.axis('off')
         plt.tight_layout()
         fig.savefig(mfccs_folder + file_name +"_mfccs.png")
         plt.close()
@@ -155,8 +153,7 @@ def plot_audio_features(wav_fullpaths, wav_names):
         chroma = librosa.feature.chroma_stft(S=stft_sound, sr=sample_rate)
         fig = plt.figure(figsize=(10, 4))
         librosa.display.specshow(chroma, y_axis='chroma', x_axis='time')
-        plt.colorbar()
-        plt.title('Chromagram')
+        plt.axis('off')
         plt.tight_layout()
         fig.savefig(chroma_folder + file_name +"_chroma.png")
         plt.close()
@@ -172,8 +169,7 @@ def plot_audio_features(wav_fullpaths, wav_names):
         librosa.display.specshow(librosa.power_to_db(mel, ref=np.max),
                                  y_axis='mel', fmax=8000,
                                  x_axis='time')
-        plt.colorbar(format='%+2.0f dB')
-        plt.title('Mel spectrogram')
+        plt.axis('off')
         plt.tight_layout()
         fig.savefig(mel_folder + file_name +"_mel.png")
         plt.close()
@@ -187,9 +183,7 @@ def plot_audio_features(wav_fullpaths, wav_names):
         contrast = librosa.feature.spectral_contrast(S=stft_sound, sr=sample_rate)
         fig = plt.figure(figsize=(10, 4))
         librosa.display.specshow(contrast, x_axis='time')
-        plt.colorbar()
-        plt.ylabel('Frequency bands')
-        plt.title('Spectral contrast')
+        plt.axis('off')
         plt.tight_layout()
         fig.savefig(contrast_folder + file_name +"_contrast.png")
         plt.close()
@@ -205,8 +199,7 @@ def plot_audio_features(wav_fullpaths, wav_names):
     
         fig = plt.figure(figsize=(10, 4))
         librosa.display.specshow(tonnetz, y_axis='tonnetz')
-        plt.colorbar()
-        plt.title('Tonal Centroids (Tonnetz)')
+        plt.axis('off')
         plt.tight_layout()
         fig.savefig(tonnetz_folder + file_name +"_tonnetz.png")
         plt.close()
@@ -223,9 +216,8 @@ def plot_specgram(sound_names, raw_sounds, graph_folder):
         # Basic spectrogram
         fig = plt.figure(figsize=(10, 4))
         specgram(np.array(f), Fs=22050)
-        # plt.title(n.title())
-        plt.suptitle(n,fontsize=18)
-        # plt.show()
+        plt.axis('off')
+        plt.tight_layout()
         fig.savefig(spectrogram_folder + n +".png")
         plt.close()
 
@@ -251,21 +243,22 @@ if __name__ == '__main__':
     if not os.path.exists(graph_folder):
         os.makedirs(graph_folder)
     
+    # # Plotting basic spectrograms and special ones.
     plot_specgram(wav_names, raw_sounds, graph_folder)
-
-    # # extract features for each wav file
-    # stft, mfccs,chroma,mel,contrast,tonnetz = extract_feature(wav_fullpaths[0])
-    
-    features, labels = create_audio_X(wav_fullpaths, wav_names)
     plot_audio_features(wav_fullpaths, wav_names)
+
+    # # Create features
+    features, labels = create_audio_X(wav_fullpaths, wav_names)
     
+    # Save features and labels
     audio_features_folder = path+'/audio_features'
     if not os.path.exists(audio_features_folder):
         os.makedirs(audio_features_folder)
+
     np.savetxt(audio_features_folder+'/features.csv', features)
     tmp = pd.DataFrame(labels)
     tmp.to_csv(audio_features_folder+'/labels.csv', header=None)
-    
+
     
 
 
