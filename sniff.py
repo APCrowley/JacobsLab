@@ -41,7 +41,100 @@ Do not add  anything but sniff clips to the github or you'll probably crash the 
 #---------------------------   ## --- Functions --- ##     ---------------------
                                #######################
 '''
+def analyze_audio(path, folder,  which_files='missing'):
+    
+    all_sub_trials, missing_sub_trials = check_missing(folder)
+    
+    if (not os.path.isfile(path+'/sniff_feat_labels.csv') or (which_files=='all')):
+        print('Generating Features for all wav files', '\n')
+        sniff_data = np.empty((0,196))
+    elif os.path.isfile(path+'/sniff_feat_labels.csv'):
+        sniff_data = pd.read_csv(os.getcwd()+'/sniff_feat_labels.csv', sep=',')
+        sniff_data = np.asarray(sniff_data)
+    
+    if which_files=='all':
+        sub_trial_names = all_sub_trials
+    elif which_files=='missing':
+        if not missing_sub_trials:
+            print('No missing files')
+            return sniff_data
+        else:
+            sub_trial_names = missing_sub_trials
+            print('Generating Features for missing wav files', '\n')
+    else: 
+        print("Try again, acceptable values for which_files: 'all' or 'missing'")
+        raise NameError(which_files)
+        
+    for sub_trial in sub_trial_names:
+        print('Creating features... ', sub_trial_names.index(sub_trial)+1, 'of', len(sub_trial_names))
+        
+        sub_trial_folder = folder+'/'+sub_trial
+        wav_names = get_file_names(sub_trial_folder)
+    
+        wav_fullpaths = [sub_trial_folder+'/'+name for name in wav_names]
 
+        # # Load audio time series for all wav files
+        raw_sounds = load_sound_files(wav_fullpaths)
+
+        # # create folder to save graphs
+        graph_folder = path+'/graphs'
+        if not os.path.exists(graph_folder):
+            os.makedirs(graph_folder)
+
+        # # Plotting basic spectrograms and special ones.
+        plot_specgram(wav_names, raw_sounds, graph_folder)
+        plot_audio_features(wav_fullpaths, wav_names, graph_folder)
+
+        # # Create features
+        sub_trial_features, sub_trial_labels = create_audio_X(sub_trial, wav_fullpaths, wav_names)
+        
+        features_labels = np.concatenate((sub_trial_features, sub_trial_labels.reshape(len(sub_trial_labels),1)), axis=1)
+        sniff_data = np.vstack([sniff_data, features_labels])
+        
+
+    sub_trial_num = ['sub_trial', 'clip_num']
+    mfccs_header = ['mfccs_'+str(i) for i in range(40)]
+    chroma_header = ['chroma_'+str(i) for i in range(12)]
+    mel_header = ['mel_'+str(i) for i in range(128)]
+    contrast_header = ['contrast_'+str(i) for i in range(7)]
+    tonnetz_header = ['tonnetz_'+str(i) for i in range(6)]
+    label_header = ['label']
+    
+    header = [name for group in [sub_trial_num, mfccs_header, chroma_header, mel_header, contrast_header, tonnetz_header, label_header] for name in group]
+    
+    sniff_data = pd.DataFrame(sniff_data)
+    
+    sniff_data.columns = header
+
+    sniff_data.to_csv('sniff_feat_labels.csv', index=False)
+    
+    return sniff_data
+
+
+def check_missing(folder): 
+
+    sub_trial_folders_temp = os.listdir(folder)
+    sub_trial_folders = os.listdir(folder)
+
+    if os.path.isfile(os.getcwd()+'/sniff_feat_labels.csv'):
+        sniff_data = pd.read_csv(os.getcwd()+'/sniff_feat_labels.csv', sep=',')         
+        existing_sub_trials = sniff_data['sub_trial'].unique()
+        existing_sub_trials = [n.lower() for n in existing_sub_trials]
+    else:
+        existing_sub_trials=[]
+
+    for f in sub_trial_folders_temp:
+        if (f.startswith('.')==True):
+            sub_trial_folders.remove(f)
+        elif '_' not in f:
+            sub_trial_folders.remove(f)
+    
+    all_sub_trials = sub_trial_folders
+    
+    missing_sub_trials = list(set(all_sub_trials).difference(existing_sub_trials))
+        
+    return all_sub_trials, missing_sub_trials
+        
 def extract_feature(wav_path):
     X, sample_rate = librosa.load(wav_path)
     stft = np.abs(librosa.stft(X))
@@ -61,7 +154,9 @@ def get_file_names(folder):
 
     for f in file_names_temp:
         if (f.startswith('.')==True):
-           file_names.remove(f)
+            file_names.remove(f)
+        elif ('-' not in f):
+            file_names.remove(f)
     return file_names
 
 
@@ -101,11 +196,7 @@ def create_audio_X(sub_trial, wav_fullpaths, wav_names):
         clip_number = f.split('-')[1].split('.')[0]
         
         stft, mfccs, chroma, mel, contrast, tonnetz, raw_sound, sample_rate = extract_feature(fp)
-        print('mfccs:', mfccs.shape)
-        print('chroma:', chroma.shape)
-        print('mel:', mel.shape)
-        print('contrast:', contrast.shape)
-        print('tonnetz:', tonnetz.shape)
+
         clip_name = np.array((sub_trial, clip_number))
         ext_features = np.hstack([clip_name, mfccs, chroma, mel, contrast, tonnetz])
         features = np.vstack([features, ext_features])
@@ -117,7 +208,7 @@ def create_audio_X(sub_trial, wav_fullpaths, wav_names):
         
     return np.array(features), np.array(labels, dtype=str)
         
-def plot_audio_features(wav_fullpaths, wav_names):
+def plot_audio_features(wav_fullpaths, wav_names, graph_folder):
     for fp, file_name in zip(wav_fullpaths, wav_names):
         raw_sound, sample_rate = librosa.load(fp)
         
@@ -237,51 +328,12 @@ def plot_specgram(sound_names, raw_sounds, graph_folder):
 if __name__ == '__main__':
     path = os.getcwd()
     folder = open_folder() 
-    # folder = path+'/clips/test_files'
-    sub_trial_names = get_file_names(folder)
-    wav_names = get_file_names(folder)
     
-    all_sniff_data = np.empty((0,196))
-    for sub_trial in sub_trial_names:
-        sub_trial_folder = folder+'/'+sub_trial
-        wav_names = get_file_names(sub_trial_folder)
-        print(wav_names)
+    analyze_audio(path, folder,  'missing')
     
-        wav_fullpaths = [sub_trial_folder+'/'+name for name in wav_names]
+    
+    
 
-        # # Load audio time series for all wav files
-        raw_sounds = load_sound_files(wav_fullpaths)
-
-        # # create folder to save graphs
-        graph_folder = path+'/graphs'
-        if not os.path.exists(graph_folder):
-            os.makedirs(graph_folder)
-
-        # # Plotting basic spectrograms and special ones.
-        plot_specgram(wav_names, raw_sounds, graph_folder)
-        plot_audio_features(wav_fullpaths, wav_names)
-
-        # # Create features
-        sub_trial_features, sub_trial_labels = create_audio_X(sub_trial, wav_fullpaths, wav_names)
-        
-        features_labels = np.concatenate((sub_trial_features, sub_trial_labels.reshape(len(sub_trial_labels),1)), axis=1)
-        all_sniff_data = np.vstack([all_sniff_data, features_labels])
-        
-    all_sniff_data = pd.DataFrame(all_sniff_data)
-    all_sniff_data.to_csv('tmp.csv')
-    
-    sub_trial_num = ['sub_trial', 'clip_num']
-    mfccs_header = ['mfccs_'+str(i) for i in range(40)]
-    chroma_header = ['chroma_'+str(i) for i in range(12)]
-    mel_header = ['mel_'+str(i) for i in range(128)]
-    contrast_header = ['contrast_'+str(i) for i in range(7)]
-    tonnetz_header = ['tonnetz_'+str(i) for i in range(6)]
-    label_header = ['label']
-    
-    header = [name for group in [sub_trial_num, mfccs_header, chroma_header, mel_header, contrast_header, tonnetz_header, label_header] for name in group]
-    
-    all_sniff_data.columns = header
-    all_sniff_data.to_csv('sniff_feat_labels.csv', index=False)
 
     
 
